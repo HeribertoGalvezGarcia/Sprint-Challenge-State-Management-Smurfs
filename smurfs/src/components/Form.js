@@ -18,28 +18,46 @@ const StyledForm = styled(Form)`
   align-items: center;
 `;
 
-function SmurfForm({toggleEdit}) {
+function SmurfForm({toggleEdit, isSubmitting, status}) {
   return (
     <StyledForm>
       Name<Field type="text" name="name" placeholder="Input smurf name" />
       Age<Field type="text" name="age" placeholder="Input smurf age" />
       Height<Field type="text" name="height" placeholder="Input smurf height" />
-      <input type="submit" value={toggleEdit ? "Update!" : "Add!"} />
+      <input disabled={isSubmitting} type="submit" value={toggleEdit ? "Update!" : "Add!"} />
+      {status && <p>{status}</p>}
     </StyledForm>
   );
 }
 
 const FormikSmurfForm = withFormik({
-  mapPropsToValues: ({name, age, height}) => ({name: name || '', age: age || '0', height: height || '0cm'}),
-  handleSubmit(values, {props: {dispatch, id, toggleEdit}}) {
+  mapPropsToValues: ({name = '', age = '0', height = '0cm'}) => ({name: name, age: age, height: height}),
+  handleSubmit(values, {setSubmitting, setStatus, props: {dispatch, id, toggleEdit}}) {
     if (toggleEdit) {
       axios.put(`http://localhost:3333/smurfs/${id}`, values)
-        .then(({data}) => {dispatch(populateSmurfs(data)); toggleEdit()})
-        .catch(e => console.dir(e));
+        .then(({data}) => {
+          dispatch(populateSmurfs(data));
+          toggleEdit();
+          setSubmitting(false);
+          setStatus('');
+        })
+        .catch(e => {
+          console.dir(e);
+          setSubmitting(false);
+          setStatus(e.response.data.Error);
+        });
     } else {
       axios.post("http://localhost:3333/smurfs", values)
-        .then(({data}) => dispatch(populateSmurfs(data)))
-        .catch(e => console.dir(e));
+        .then(({data}) => {
+          dispatch(populateSmurfs(data));
+          setSubmitting(false);
+          setStatus('');
+        })
+        .catch(e => {
+          console.dir(e);
+          setSubmitting(false);
+          setStatus(e.response.data.Error);
+        });
     }
   }
 })(SmurfForm);

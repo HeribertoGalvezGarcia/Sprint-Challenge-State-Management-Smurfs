@@ -40,7 +40,7 @@ function Smurf({id, name, age, height}) {
   function toggleEdit() {
     setEditing(edit => !edit);
   }
-  if (editing) return <FormikSmurfForm dispatch={dispatch} toggleEdit={toggleEdit} id={id} name={name} age={age} height={height} />;
+  if (editing) return <FormikSmurfForm  {...{id, name, age, height, dispatch, toggleEdit}} />;
 
   return (
     <StyledSmurf>
